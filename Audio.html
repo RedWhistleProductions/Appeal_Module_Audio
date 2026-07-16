@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audio Module Command Reference</title>
+  <style>
+    :root { color-scheme: light dark; --bg:#f7f7f4; --fg:#1c1d20; --panel:#fff; --line:#cfd4d9; --muted:#5d6470; --accent:#15616d; }
+    @media (prefers-color-scheme:dark) { :root { --bg:#15171a; --fg:#eceff3; --panel:#1f2328; --line:#343a42; --muted:#aab2bd; --accent:#4fb3bf; } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { max-width:1200px; margin:auto; padding:34px 22px 56px; }
+    h1 { margin:0 0 8px; font-size:clamp(2rem,5vw,3.2rem); }
+    .summary { color:var(--muted); margin-bottom:24px; }
+    input { width:100%; max-width:520px; margin:0 0 18px; padding:10px 12px; border:1px solid var(--line); border-radius:7px; background:var(--panel); color:var(--fg); }
+    table { width:100%; border-collapse:collapse; background:var(--panel); }
+    th,td { padding:10px 12px; border:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { background:color-mix(in srgb,var(--accent),transparent 86%); }
+    th:first-child { width:24%; } th:nth-child(2) { width:31%; }
+    code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; overflow-wrap:anywhere; }
+    footer { margin-top:20px; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Audio Module</h1>
+    <p class="summary">Command reference generated from <code>src/main.cpp</code>. Arguments are shown in the order consumed by the module interpreter.</p>
+    <label for="filter">Filter commands</label><br>
+    <input id="filter" type="search" placeholder="Type a command, argument, or description">
+    <table>
+      <thead><tr><th>Command</th><th>Arguments</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><code>Init</code></td><td><code>Name: string</code></td><td>Initializes the module and loads its default plugin.</td></tr>
+        <tr><td><code>Debug</code></td><td><code>Value: string</code></td><td>Enables or disables diagnostic logging for the module and active plugin.</td></tr>
+        <tr><td><code>Back</code></td><td><code>none</code></td><td>Requests the module to back.</td></tr>
+        <tr><td><code>Load_Play_List</code></td><td><code>Command: value</code></td><td>Requests the module to load play list.</td></tr>
+        <tr><td><code>Load_SFX</code></td><td><code>Name: string, SFX_File: string</code></td><td>Requests the module to load sfx.</td></tr>
+        <tr><td><code>Load_Song</code></td><td><code>Name: string, Music_File: string</code></td><td>Requests the module to load song.</td></tr>
+        <tr><td><code>Mute</code></td><td><code>none</code></td><td>Requests the module to mute.</td></tr>
+        <tr><td><code>Next</code></td><td><code>none</code></td><td>Requests the module to next.</td></tr>
+        <tr><td><code>Play</code></td><td><code>none</code></td><td>Requests the module to play.</td></tr>
+        <tr><td><code>Play_SFX</code></td><td><code>none</code></td><td>Requests the module to play sfx.</td></tr>
+        <tr><td><code>Play_SFX_Name</code></td><td><code>Name: string</code></td><td>Requests the module to play sfx name.</td></tr>
+        <tr><td><code>Play_Song</code></td><td><code>Name: string</code></td><td>Requests the module to play song.</td></tr>
+        <tr><td><code>Play_Track</code></td><td><code>Track: int</code></td><td>Requests the module to play track.</td></tr>
+        <tr><td><code>Set_Paths</code></td><td><code>Resources: string</code></td><td>Sets the root Appeal resources path used by the module.</td></tr>
+        <tr><td><code>Stop</code></td><td><code>none</code></td><td>Requests the module to stop.</td></tr>
+        <tr><td><code>UnMute</code></td><td><code>none</code></td><td>Requests the module to unmute.</td></tr>
+        <tr><td><code>Update</code></td><td><code>none</code></td><td>Advances or refreshes the module state for the current update cycle.</td></tr>
+        <tr><td><code>Toggle_Mute</code></td><td><code>none</code></td><td>Requests the module to toggle mute.</td></tr>
+        <tr><td><code>Set_Volume</code></td><td><code>Volume: int</code></td><td>Requests the module to set volume.</td></tr>
+        <tr><td><code>Set_Volume_Percent</code></td><td><code>Percent: int</code></td><td>Requests the module to set volume percent.</td></tr>
+        <tr><td><code>Set_Current_Loop</code></td><td><code>Loop: int</code></td><td>Requests the module to set current loop.</td></tr>
+        <tr><td><code>Set_Auto_Play</code></td><td><code>Auto_Play: int</code></td><td>Requests the module to set auto play.</td></tr>
+        <tr><td><code>Get_Volume</code></td><td><code>none</code></td><td>Requests the module to get volume.</td></tr>
+        <tr><td><code>Get_Volume_Percent</code></td><td><code>none</code></td><td>Requests the module to get volume percent.</td></tr>
+        <tr><td><code>Current_Looping</code></td><td><code>none</code></td><td>Requests the module to current looping.</td></tr>
+        <tr><td><code>Auto_Playing</code></td><td><code>none</code></td><td>Requests the module to auto playing.</td></tr>
+        <tr><td><code>Current_Song</code></td><td><code>none</code></td><td>Requests the module to current song.</td></tr>
+        <tr><td><code>Is_Muted</code></td><td><code>none</code></td><td>Requests the module to is muted.</td></tr>
+      </tbody>
+    </table>
+    <footer>28 commands documented.</footer>
+  </main>
+  <script>
+    const filter = document.getElementById('filter');
+    const rows = [...document.querySelectorAll('tbody tr')];
+    filter.addEventListener('input', () => {
+      const query = filter.value.toLowerCase();
+      rows.forEach(row => row.hidden = !row.textContent.toLowerCase().includes(query));
+    });
+  </script>
+</body>
+</html>

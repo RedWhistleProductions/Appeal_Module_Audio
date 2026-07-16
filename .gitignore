@@ -1,0 +1,17 @@
+SDL2_Audio/
+obj/
+build/
+dist/
+*.dll
+*.so
+*.dylib
+*.o
+*.obj
+*.a
+*.lib
+*.exe
+.vscode/
+.vs/
+.idea/
+.DS_Store
+Thumbs.db

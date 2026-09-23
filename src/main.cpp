@@ -2,6 +2,9 @@
 #include "Data_Source.h"
 #include "Module_Data.h"
 #include "Named_List.h"
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 
 
     Plugin Module;
@@ -56,6 +59,46 @@
             Globals->Add_Node(Full_Name, Data);
         }
     }
+    void Set_Default_Audio_Globals()
+    {
+        Set_Global("Current_Song", "string", "");
+        Set_Global("Volume", "int", "100");
+        Set_Global("Volume_Percent", "int", "100");
+        Set_Global("Current_Looping", "bool", "0");
+        Set_Global("Auto_Playing", "bool", "0");
+        Set_Global("Muted", "bool", "0");
+    }
+
+    void Load_Default_Audio_Config()
+    {
+        std::ifstream File("Resources/Modules/Appeal_Module_Audio/Default_Audio_Config.Appeal");
+        if(!File.is_open()) return;
+
+        std::string Line;
+        while(std::getline(File, Line))
+        {
+            std::istringstream Stream(Line);
+            std::string Name;
+            std::string Type;
+            std::string Value;
+
+            if(!(Stream >> Name)) continue;
+            if(Name == "//" || Name[0] == '#') continue;
+            if(!(Stream >> Type)) continue;
+
+            Stream >> std::ws;
+            if(Stream.peek() == '"')
+            {
+                Stream >> std::quoted(Value);
+            }
+            else
+            {
+                Stream >> Value;
+            }
+
+            Set_Global(Name, Type, Value);
+        }
+    }
 
     void Update_Audio_Globals()
     {
@@ -97,7 +140,8 @@
         Module.Assign("Auto_Playing", Auto_Playing);
         Module.Assign("Current_Song", Current_Song);
         Module.Assign("Is_Muted", Is_Muted);
-        Update_Audio_Globals();
+        Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
     }
 
  extern "C" void Init(std::string Name)
@@ -125,10 +169,6 @@ extern "C" bool Audio_Is_Muted() { return Is_Muted(); }
 
 extern "C" void Shutdown()
 {
-    if(Stop != nullptr)
-    {
-        Stop();
-    }
     Module.Unload();
     Globals = nullptr;
 }
@@ -162,14 +202,16 @@ extern "C" void Interpreter(Data_Source *Data)
         else if(Command == "Back")
         {
             Back();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Load_Play_List")
         {
             *Data >> Command;
             Load_Play_List(Command);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Load_SFX")
@@ -188,25 +230,29 @@ extern "C" void Interpreter(Data_Source *Data)
             *Data >> Name;
             *Data >> Music_File;
             Load_Song(Name, Music_File);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Mute")
         {
             Mute();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Next")
         {
             Next();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Play")
         {
             Play();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Play_SFX")
@@ -226,7 +272,8 @@ extern "C" void Interpreter(Data_Source *Data)
             std::string Name;
             *Data >> Name;
             Play_Song(Name);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Play_Track")
@@ -234,7 +281,8 @@ extern "C" void Interpreter(Data_Source *Data)
             int Track;
             *Data >> Track;
             Play_Track(Track);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "Set_Paths")
@@ -247,18 +295,21 @@ extern "C" void Interpreter(Data_Source *Data)
         else if(Command == "Stop")
         {
             Stop();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
 
         else if(Command == "UnMute")
         {
             UnMute();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Update")
         {
             Update();
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Toggle_Mute")
         {
@@ -270,35 +321,40 @@ extern "C" void Interpreter(Data_Source *Data)
             {
                 Mute();
             }
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Set_Volume")
         {
             int Volume;
             *Data >> Volume;
             Set_Volume(Volume);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Set_Volume_Percent")
         {
             int Percent;
             *Data >> Percent;
             Set_Volume_Percent(Percent);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Set_Current_Loop")
         {
             int Loop;
             *Data >> Loop;
             Set_Current_Loop(Loop);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Set_Auto_Play")
         {
             int Auto_Play;
             *Data >> Auto_Play;
             Set_Auto_Play(Auto_Play);
-            Update_Audio_Globals();
+            Set_Default_Audio_Globals();
+        Load_Default_Audio_Config();
         }
         else if(Command == "Get_Volume")
         {

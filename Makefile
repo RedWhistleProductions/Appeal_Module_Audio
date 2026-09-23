@@ -5,11 +5,11 @@ UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
 CXX ?= g++
 	CXXFLAGS = -shared -fPIC -I../../Source
-	TARGET = Audio.so
+	TARGET = Appeal_Module_Audio.so
 else
 CXX ?= g++
 	CXXFLAGS = -shared -I../../Source
-	TARGET = Audio.dll
+	TARGET = Appeal_Module_Audio.dll
 endif
 
 # Source files

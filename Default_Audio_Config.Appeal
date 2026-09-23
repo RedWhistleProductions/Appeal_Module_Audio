@@ -1,0 +1,8 @@
+// Default Audio Globals
+// Format: Name Type Value
+Current_Song string ""
+Volume int 100
+Volume_Percent int 100
+Current_Looping bool 0
+Auto_Playing bool 0
+Muted bool 0

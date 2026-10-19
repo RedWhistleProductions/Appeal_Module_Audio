@@ -15,3 +15,6 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# SDL backend is maintained in its own repository; Test belongs here.
+/Appeal_SDL2_Audio/

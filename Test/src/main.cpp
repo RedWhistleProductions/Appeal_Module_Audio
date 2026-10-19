@@ -82,6 +82,11 @@ extern "C" void Set_Paths(std::string Path)
 }
 
 // Stop Playing the Current Song 
+extern "C" void Set_Playlist_Path(std::string Path)
+{
+	std::cout << "Set_Playlist_Path " << Path << std::endl;
+}
+
 extern "C" void Stop()
 {
 	std::cout << "Stop" << std::endl;
@@ -114,9 +119,9 @@ extern "C" void Set_Current_Loop(int Loop)
 }
 
 // Play through the playlist or stop when this Song ends
-extern "C" void Set_Auto_Play(int Auto_Play)
+extern "C" void Auto_Play_Next(int Auto_Play)
 {
-	std::cout << "Set_Auto_Play " << Auto_Play << std::endl;
+	std::cout << "Auto_Play_Next " << Auto_Play << std::endl;
 }
 
 // Returns the current Volume 0 to 100
@@ -134,9 +139,9 @@ extern "C" bool Current_Looping()
 }
 
 // Returns the status of Auto_Play
-extern "C" bool Auto_Playing()
+extern "C" bool Auto_Play_Next_Status()
 {
-	std::cout << "Auto_Playing" << std::endl;
+	std::cout << "Auto_Play_Next_Status" << std::endl;
 	return true;
 }
 
@@ -151,5 +156,11 @@ extern "C" std::string Current_Song()
 extern "C" bool Is_Muted()
 {
 	std::cout << "Is_Muted" << std::endl;
+	return true;
+}
+
+extern "C" bool Is_Playing()
+{
+	std::cout << "Is_Playing" << std::endl;
 	return true;
 }

@@ -32,7 +32,7 @@
       <tbody>
         <tr><td><code>Debug</code></td><td><code>Value: string</code></td><td>Enables or disables diagnostic logging for the module and active plugin.</td></tr>
         <tr><td><code>Back</code></td><td><code>none</code></td><td>Requests the module to back.</td></tr>
-        <tr><td><code>Load_Play_List</code></td><td><code>Command: value</code></td><td>Requests the module to load play list.</td></tr>
+        <tr><td><code>Load_Play_List</code></td><td><code>File_Name: string</code></td><td>Loads a playlist from Resources/Audio/Playlist by default. Song filenames inside it remain relative to Resources/Audio/Music.</td></tr>
         <tr><td><code>Load_SFX</code></td><td><code>Name: string, SFX_File: string</code></td><td>Requests the module to load sfx.</td></tr>
         <tr><td><code>Load_Song</code></td><td><code>Name: string, Music_File: string</code></td><td>Requests the module to load song.</td></tr>
         <tr><td><code>Mute</code></td><td><code>none</code></td><td>Requests the module to mute.</td></tr>
@@ -42,28 +42,46 @@
         <tr><td><code>Play_SFX_Name</code></td><td><code>Name: string</code></td><td>Requests the module to play sfx name.</td></tr>
         <tr><td><code>Play_Song</code></td><td><code>Name: string</code></td><td>Requests the module to play song.</td></tr>
         <tr><td><code>Play_Track</code></td><td><code>Track: int</code></td><td>Requests the module to play track.</td></tr>
-        <tr><td><code>Set_Paths</code></td><td><code>Resources: string</code></td><td>Sets the root Appeal resources path used by the module.</td></tr>
+        <tr><td><code>Set_Paths</code></td><td><code>Resources: string</code></td><td>Sets the resources root for music, sound effects, and playlists. Resets the playlist directory to Audio/Playlist beneath that root.</td></tr>
         <tr><td><code>Stop</code></td><td><code>none</code></td><td>Requests the module to stop.</td></tr>
         <tr><td><code>UnMute</code></td><td><code>none</code></td><td>Requests the module to unmute.</td></tr>
-        <tr><td><code>Update</code></td><td><code>none</code></td><td>Advances or refreshes the module state for the current update cycle.</td></tr>
+        <tr><td><code>Update</code></td><td><code>none</code></td><td>Checks for a finished track immediately. Optional with the SDL2 plugin, which also checks playback automatically.</td></tr>
         <tr><td><code>Toggle_Mute</code></td><td><code>none</code></td><td>Requests the module to toggle mute.</td></tr>
         <tr><td><code>Set_Volume</code></td><td><code>Volume: int</code></td><td>Requests the module to set volume.</td></tr>
         <tr><td><code>Set_Volume_Percent</code></td><td><code>Percent: int</code></td><td>Requests the module to set volume percent.</td></tr>
         <tr><td><code>Set_Current_Loop</code></td><td><code>Loop: int</code></td><td>Requests the module to set current loop.</td></tr>
-        <tr><td><code>Set_Auto_Play</code></td><td><code>Auto_Play: int</code></td><td>Requests the module to set auto play.</td></tr>
+        <tr><td><code>Auto_Play_Next</code></td><td><code>Auto_Play: int</code></td><td>Use 1 to enable automatic advancement to the next track, or 0 to disable it. The SDL2 plugin monitors playback automatically; script-side Audio Update calls are not required.</td></tr>
         <tr><td><code>Get_Volume</code></td><td><code>none</code></td><td>Requests the module to get volume.</td></tr>
         <tr><td><code>Get_Volume_Percent</code></td><td><code>none</code></td><td>Requests the module to get volume percent.</td></tr>
         <tr><td><code>Current_Looping</code></td><td><code>none</code></td><td>Requests the module to current looping.</td></tr>
-        <tr><td><code>Auto_Playing</code></td><td><code>none</code></td><td>Requests the module to auto playing.</td></tr>
+        <tr><td><code>Auto_Play_Next_Status</code></td><td><code>none</code></td><td>Queries automatic advancement. With Audio Debug On, prints 1 when enabled or 0 when disabled. This interpreter command does not return an expression value.</td></tr>
+        <tr><td><code>Set_Playlist_Path</code></td><td><code>Path: string</code></td><td>Sets the playlist directory. Defaults to Resources/Audio/Playlist; Set_Paths resets it to Audio/Playlist beneath the supplied resources root. Load_Play_List resolves filenames from this directory.</td></tr>
         <tr><td><code>Current_Song</code></td><td><code>none</code></td><td>Requests the module to current song.</td></tr>
         <tr><td><code>Is_Muted</code></td><td><code>none</code></td><td>Requests the module to is muted.</td></tr>
+        <tr><td><code>Is_Playing</code></td><td><code>none</code></td><td>Returns 1 while music is playing, otherwise 0, and updates Audio.Is_Playing. Supports expressions such as <code>( Audio Is_Playing ) == 1</code>. Sound effects do not affect this status.</td></tr>
       </tbody>
     </table>
-    <footer>28 commands documented.</footer>
+    <h2>Playlist paths and automatic advancement</h2>
+    <p>Prefix commands with <code>Audio</code>. The bundled <code>PlayAll.txt</code> is in <code>Resources/Audio/Playlist</code>.</p>
+    <pre><code>Audio Load_Play_List "PlayAll.txt"
+Audio Auto_Play_Next 1
+Audio Debug On
+Audio Auto_Play_Next_Status
+Audio Play
+
+// Playback advances automatically while your script continues.
+// Disable automatic advancement:
+Audio Auto_Play_Next 0</code></pre>
+    <p>To use another directory, call <code>Audio Set_Playlist_Path "Resources/Audio/My Playlists"</code> before loading a playlist. A trailing slash is optional. Relative paths are resolved from the process working directory.</p>
+    <p>Playlist entries use a quoted title followed by a music-relative filename, for example:</p>
+    <pre><code>"RPG 1" Samples/RPG_1.mp3</code></pre>
+    <p><code>Auto_Play_Next</code> replaces the former <code>Set_Auto_Play</code> setter. <code>Auto_Play_Next_Status</code> replaces the former <code>Auto_Playing</code> query (briefly named <code>Auto_Play_Next</code>). The configuration status field is now <code>Auto_Play_Next_Status bool 0</code>.</p>
+    <footer><span id="command-count"></span> commands documented.</footer>
   </main>
   <script>
     const filter = document.getElementById('filter');
     const rows = [...document.querySelectorAll('tbody tr')];
+    document.getElementById('command-count').textContent = rows.length;
     filter.addEventListener('input', () => {
       const query = filter.value.toLowerCase();
       rows.forEach(row => row.hidden = !row.textContent.toLowerCase().includes(query));

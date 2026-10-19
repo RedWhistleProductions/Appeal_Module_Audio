@@ -6,10 +6,12 @@
 #include <iomanip>
 #include <sstream>
 
+// Bridges Appeal audio commands and exported entry points to a dynamically loaded plugin.
 
     Plugin Module;
     bool Module_Debug = false;
 
+    // Backend functions resolved by Init_Globals; initialize before dispatching commands.
     void (*Back)();
     void (*Debug)(bool Enable);
     void (*Load_Play_List)(std::string Play_List);
@@ -23,6 +25,7 @@
     void (*Play_Song)(std::string Name);
     void (*Play_Track)(int Track);
     void (*Set_Paths)(std::string Resources);
+    void (*Set_Playlist_Path)(std::string Path);
     void (*Stop)();
     void (*UnMute)();
     void (*Update)();
@@ -32,13 +35,16 @@
     int (*Get_Volume_Percent)();
     void (*Set_Current_Loop)(int Loop);
     bool (*Current_Looping)();
-    void (*Set_Auto_Play)(int Auto_Play);
-    bool (*Auto_Playing)();
+    void (*Auto_Play_Next)(int Auto_Play);
+    bool (*Auto_Play_Next_Status)();
     std::string (*Current_Song)();
     bool (*Is_Muted)();
+    bool (*Is_Playing)();
 
+    // Borrowed interpreter globals; nullptr disables publication of Audio.* values.
     Named_List<Module_Data> *Globals = nullptr;
 
+    // Insert or replace a typed, string-encoded value in the Audio namespace.
     void Set_Global(std::string Name, std::string Type, std::string Value)
     {
         if(Globals == nullptr) return;
@@ -59,16 +65,21 @@
             Globals->Add_Node(Full_Name, Data);
         }
     }
+
+    // Seed script-visible defaults without changing the backend's playback state.
     void Set_Default_Audio_Globals()
     {
         Set_Global("Current_Song", "string", "");
         Set_Global("Volume", "int", "100");
         Set_Global("Volume_Percent", "int", "100");
         Set_Global("Current_Looping", "bool", "0");
-        Set_Global("Auto_Playing", "bool", "0");
+        Set_Global("Auto_Play_Next_Status", "bool", "0");
         Set_Global("Muted", "bool", "0");
+        Set_Global("Is_Playing", "bool", "0");
     }
 
+    // Override globals from optional Name Type Value records, supporting quoted values.
+    // The configuration path is relative to the process working directory.
     void Load_Default_Audio_Config()
     {
         std::ifstream File("Resources/Modules/Appeal_Module_Audio/Default_Audio_Config.Appeal");
@@ -100,16 +111,18 @@
         }
     }
 
+    // Sample available backend getters into globals; Is_Playing is handled separately.
     void Update_Audio_Globals()
     {
         if(Current_Song != nullptr) Set_Global("Current_Song", "string", Current_Song());
         if(Get_Volume != nullptr) Set_Global("Volume", "int", std::to_string(Get_Volume()));
         if(Get_Volume_Percent != nullptr) Set_Global("Volume_Percent", "int", std::to_string(Get_Volume_Percent()));
         if(Current_Looping != nullptr) Set_Global("Current_Looping", "bool", Current_Looping() ? "1" : "0");
-        if(Auto_Playing != nullptr) Set_Global("Auto_Playing", "bool", Auto_Playing() ? "1" : "0");
+        if(Auto_Play_Next_Status != nullptr) Set_Global("Auto_Play_Next_Status", "bool", Auto_Play_Next_Status() ? "1" : "0");
         if(Is_Muted != nullptr) Set_Global("Muted", "bool", Is_Muted() ? "1" : "0");
     }
 
+ // Bind backend exports and populate the host's shared globals with configured defaults.
  extern "C" void Init_Globals(std::string Name, Named_List<Module_Data> *Shared_Globals)
     {
         Globals = Shared_Globals;
@@ -127,6 +140,7 @@
         Module.Assign("Play_Song", Play_Song);
         Module.Assign("Play_Track", Play_Track);             
         Module.Assign("Set_Paths", Set_Paths);
+        Module.Assign("Set_Playlist_Path", Set_Playlist_Path);
         Module.Assign("Stop", Stop);
         Module.Assign("UnMute", UnMute);
         Module.Assign("Update", Update);
@@ -136,19 +150,23 @@
         Module.Assign("Get_Volume_Percent", Get_Volume_Percent);
         Module.Assign("Set_Current_Loop", Set_Current_Loop);
         Module.Assign("Current_Looping", Current_Looping);
-        Module.Assign("Set_Auto_Play", Set_Auto_Play);
-        Module.Assign("Auto_Playing", Auto_Playing);
+        Module.Assign("Auto_Play_Next", Auto_Play_Next);
+        Module.Assign("Auto_Play_Next_Status", Auto_Play_Next_Status);
         Module.Assign("Current_Song", Current_Song);
         Module.Assign("Is_Muted", Is_Muted);
+        Module.Assign("Is_Playing", Is_Playing);
+
         Set_Default_Audio_Globals();
         Load_Default_Audio_Config();
     }
 
+ // Initialize without a shared global table for callers using the basic entry point.
  extern "C" void Init(std::string Name)
     {
         Init_Globals(Name, nullptr);
     }
 
+// Unmangled exports forward directly to the backend without refreshing shared globals.
 extern "C" void Audio_Back() { Back(); }
 extern "C" void Audio_Next() { Next(); }
 extern "C" void Audio_Play() { Play(); }
@@ -162,17 +180,22 @@ extern "C" void Audio_Set_Volume_Percent(int Percent) { Set_Volume_Percent(Perce
 extern "C" int Audio_Get_Volume_Percent() { return Get_Volume_Percent(); }
 extern "C" void Audio_Set_Current_Loop(int Loop) { Set_Current_Loop(Loop); }
 extern "C" bool Audio_Current_Looping() { return Current_Looping(); }
-extern "C" void Audio_Set_Auto_Play(int Auto_Play) { Set_Auto_Play(Auto_Play); }
-extern "C" bool Audio_Auto_Playing() { return Auto_Playing(); }
+extern "C" void Audio_Auto_Play_Next(int Auto_Play) { Auto_Play_Next(Auto_Play); }
+extern "C" bool Audio_Auto_Play_Next_Status() { return Auto_Play_Next_Status(); }
+extern "C" void Audio_Set_Playlist_Path(std::string Path) { Set_Playlist_Path(Path); }
 extern "C" std::string Audio_Current_Song() { return Current_Song(); }
 extern "C" bool Audio_Is_Muted() { return Is_Muted(); }
+extern "C" bool Audio_Is_Playing() { return Is_Playing(); }
 
+// Release the backend and detach the borrowed global table; it remains host-owned.
 extern "C" void Shutdown()
 {
     Module.Unload();
     Globals = nullptr;
 }
 
+// Consume one command and its arguments from the interpreter's data source.
+// Playback and setting branches below reseed globals from defaults and configuration.
 extern "C" void Interpreter(Data_Source *Data)
     {
         std::string Command;
@@ -292,6 +315,13 @@ extern "C" void Interpreter(Data_Source *Data)
             Set_Paths(Resources);
         }
 
+        else if(Command == "Set_Playlist_Path")
+        {
+            std::string Path;
+            *Data >> Path;
+            Set_Playlist_Path(Path);
+        }
+
         else if(Command == "Stop")
         {
             Stop();
@@ -348,11 +378,11 @@ extern "C" void Interpreter(Data_Source *Data)
             Set_Default_Audio_Globals();
         Load_Default_Audio_Config();
         }
-        else if(Command == "Set_Auto_Play")
+        else if(Command == "Auto_Play_Next")
         {
             int Auto_Play;
             *Data >> Auto_Play;
-            Set_Auto_Play(Auto_Play);
+            Auto_Play_Next(Auto_Play);
             Set_Default_Audio_Globals();
         Load_Default_Audio_Config();
         }
@@ -368,17 +398,27 @@ extern "C" void Interpreter(Data_Source *Data)
         {
             if(Module_Debug) std::cout << Current_Looping() << std::endl;
         }
-        else if(Command == "Auto_Playing")
+        else if(Command == "Auto_Play_Next_Status")
         {
-            if(Module_Debug) std::cout << Auto_Playing() << std::endl;
+            if(Module_Debug) std::cout << Auto_Play_Next_Status() << std::endl;
         }
         else if(Command == "Current_Song")
         {
-            if(Module_Debug) std::cout << Current_Song() << std::endl;
+            std::string Song = Current_Song != nullptr ? Current_Song() : "";
+            Set_Global("Current_Song", "string", Song);
+            Data->Return_Value(Song);
+            if(Module_Debug) std::cout << Song << std::endl;
         }
         else if(Command == "Is_Muted")
         {
             if(Module_Debug) std::cout << Is_Muted() << std::endl;
+        }
+        else if(Command == "Is_Playing")
+        {
+            // Publish both the shared global and the result used by nested expressions.
+            bool Playing = Is_Playing != nullptr && Is_Playing();
+            Set_Global("Is_Playing", "bool", Playing ? "1" : "0");
+            Data->Return_Value(Playing ? "1" : "0");
         }
 
         else
